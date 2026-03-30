@@ -48,6 +48,7 @@ export interface PortfolioPoint {
   channels: { name: string; value: number }[];
   eventLabel?: string;
   note?: string;
+  markerTitle?: string;
   isMarker: boolean;
 }
 

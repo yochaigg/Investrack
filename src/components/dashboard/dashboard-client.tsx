@@ -98,7 +98,7 @@ export function DashboardClient({ data }: { data: DashboardData }) {
       />
 
       {/* Portfolio chart */}
-      <PortfolioChart data={filtered.portfolioSeries} />
+      <PortfolioChart data={filtered.portfolioSeries} totalROI={filtered.totalROI} />
 
       {/* Per-channel charts */}
       <div>

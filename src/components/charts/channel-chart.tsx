@@ -19,6 +19,12 @@ function formatCurrency(n: number): string {
   return `$${n.toFixed(0)}`;
 }
 
+function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}k`;
+  return `$${n.toFixed(0)}`;
+}
+
 function CustomTooltip({
   active,
   payload,
@@ -73,26 +79,41 @@ function CustomTooltip({
   );
 }
 
-function MarkerDot({
+function LabeledMarker({
   cx = 0,
   cy = 0,
   color,
+  payload,
 }: {
   cx?: number;
   cy?: number;
   color: string;
+  payload?: DataPoint;
 }) {
+  const label = payload?.markerTitle || formatCompact(payload?.portfolioValue ?? 0);
   return (
     <g>
-      <circle cx={cx} cy={cy} r={7} fill={`${color}20`} />
+      <circle cx={cx} cy={cy} r={9} fill={`${color}15`} />
+      <circle cx={cx} cy={cy} r={5} fill={`${color}30`} />
       <circle
         cx={cx}
         cy={cy}
-        r={3.5}
+        r={3}
         fill={color}
         stroke="#06060f"
-        strokeWidth={2}
+        strokeWidth={1.5}
       />
+      <text
+        x={cx}
+        y={cy - 13}
+        textAnchor="middle"
+        fill={color}
+        fontSize={10}
+        fontWeight={700}
+        fontFamily="Inter, system-ui, sans-serif"
+      >
+        {label}
+      </text>
     </g>
   );
 }
@@ -105,22 +126,35 @@ interface ChannelChartProps {
 
 export function ChannelChart({ data, color, name }: ChannelChartProps) {
   const markers = data.filter((d) => d.isMarker);
-  const gradId = `grad-${name.replace(/\s/g, "-")}`;
+  const gradId = `grad-${name.replace(/\s+/g, "-")}`;
+  const glowId = `glow-${name.replace(/\s+/g, "-")}`;
 
   return (
     <div className="h-[200px] sm:h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
-          margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+          margin={{ top: 16, right: 4, left: 0, bottom: 0 }}
         >
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+              <stop offset="50%" stopColor={color} stopOpacity={0.08} />
+              <stop offset="100%" stopColor={color} stopOpacity={0.01} />
             </linearGradient>
+            <filter id={glowId}>
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="rgba(255,255,255,0.03)"
+          />
           <XAxis
             dataKey="date"
             tickFormatter={(v) => format(new Date(v), "MMM yy")}
@@ -135,9 +169,21 @@ export function ChannelChart({ data, color, name }: ChannelChartProps) {
             axisLine={false}
             tickLine={false}
             width={48}
-            domain={["dataMin * 0.95", "dataMax * 1.05"]}
+            domain={["dataMin * 0.9", "dataMax * 1.1"]}
           />
           <Tooltip content={<CustomTooltip color={color} />} />
+          {/* Ghost glow line */}
+          <Area
+            type="monotone"
+            dataKey="portfolioValue"
+            stroke={color}
+            strokeWidth={5}
+            strokeOpacity={0.12}
+            fill="none"
+            dot={false}
+            activeDot={false}
+          />
+          {/* Main line */}
           <Area
             type="monotone"
             dataKey="portfolioValue"
@@ -151,13 +197,14 @@ export function ChannelChart({ data, color, name }: ChannelChartProps) {
               stroke: "#06060f",
               strokeWidth: 2,
             }}
+            filter={`url(#${glowId})`}
           />
           {markers.map((m, i) => (
             <ReferenceDot
               key={i}
               x={m.date}
               y={m.portfolioValue}
-              shape={<MarkerDot color={color} />}
+              shape={<LabeledMarker color={color} payload={m} />}
             />
           ))}
         </AreaChart>

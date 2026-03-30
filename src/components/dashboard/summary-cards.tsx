@@ -36,8 +36,9 @@ interface CardDef {
   value: string;
   sub?: string;
   icon: React.ReactNode;
-  accent?: string;
-  glow?: string;
+  borderColor: string;
+  textColor: string;
+  glowColor?: string;
 }
 
 export function SummaryCards({ data }: { data: DashboardData }) {
@@ -45,78 +46,107 @@ export function SummaryCards({ data }: { data: DashboardData }) {
 
   const cards: CardDef[] = [
     {
-      label: "Total Invested",
+      label: "Initial Investment",
       value: formatCurrency(data.totalInvested),
+      sub: "USD",
       icon: <DollarSign className="w-4 h-4" />,
-      accent: "text-neon-cyan",
+      borderColor: "#3b82f6",
+      textColor: "text-blue-400",
     },
     {
-      label: "Portfolio Value",
-      value: formatCurrency(data.currentValue),
-      icon: <BarChart3 className="w-4 h-4" />,
-      accent: "text-neon-cyan",
-      glow: "text-glow-cyan",
-    },
-    {
-      label: "Total P/L",
-      value: formatCurrency(data.totalPL),
-      sub: formatPercent(data.totalROI),
+      label: "Total Gain",
+      value: `${isPositive ? "+" : ""}${formatCurrency(data.totalPL)}`,
+      sub: "USD",
       icon: isPositive ? (
         <TrendingUp className="w-4 h-4" />
       ) : (
         <TrendingDown className="w-4 h-4" />
       ),
-      accent: isPositive ? "text-gain" : "text-loss",
-      glow: isPositive ? "text-glow-green" : "text-glow-loss",
+      borderColor: isPositive ? "#00ff88" : "#ff3366",
+      textColor: isPositive ? "text-gain" : "text-loss",
+      glowColor: isPositive ? "text-glow-green" : "text-glow-loss",
     },
     {
-      label: "ROI",
+      label: "Return",
       value: formatPercent(data.totalROI),
       icon: isPositive ? (
         <TrendingUp className="w-4 h-4" />
       ) : (
         <TrendingDown className="w-4 h-4" />
       ),
-      accent: isPositive ? "text-gain" : "text-loss",
-      glow: isPositive ? "text-glow-green" : "text-glow-loss",
-    },
-    {
-      label: "Active Channels",
-      value: data.activeChannels.toString(),
-      icon: <Layers className="w-4 h-4" />,
-      accent: "text-neon-purple",
+      borderColor: isPositive ? "#f59e0b" : "#ff3366",
+      textColor: isPositive ? "text-amber-400" : "text-loss",
+      glowColor: isPositive ? undefined : "text-glow-loss",
     },
     {
       label: "Duration",
       value: `${formatDate(data.firstDate)} — ${formatDate(data.lastDate)}`,
       icon: <Calendar className="w-4 h-4" />,
-      accent: "text-white/60",
+      borderColor: "#8b5cf6",
+      textColor: "text-violet-400",
+    },
+    {
+      label: "Portfolio Value",
+      value: formatCurrency(data.currentValue),
+      icon: <BarChart3 className="w-4 h-4" />,
+      borderColor: "#00f0ff",
+      textColor: "text-neon-cyan",
+      glowColor: "text-glow-cyan",
+    },
+    {
+      label: "Active Channels",
+      value: data.activeChannels.toString(),
+      icon: <Layers className="w-4 h-4" />,
+      borderColor: "#ec4899",
+      textColor: "text-pink-400",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      {cards.map((card) => (
+      {cards.map((card, i) => (
         <div
           key={card.label}
-          className="glass rounded-xl p-3.5 sm:p-4 animate-slide-up"
+          className="relative rounded-xl p-3.5 sm:p-4 animate-slide-up overflow-hidden"
+          style={{
+            animationDelay: `${i * 60}ms`,
+            background: "rgba(255,255,255,0.03)",
+            border: `1px solid ${card.borderColor}33`,
+          }}
         >
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-white/30">{card.icon}</span>
-            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">
-              {card.label}
-            </span>
-          </div>
+          {/* Top accent border */}
           <div
-            className={`text-base sm:text-lg font-bold ${card.accent} ${card.glow ?? ""} leading-tight`}
-          >
-            {card.value}
-          </div>
-          {card.sub && (
-            <div className={`text-xs mt-0.5 ${card.accent} opacity-70`}>
-              {card.sub}
+            className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${card.borderColor}, transparent)`,
+            }}
+          />
+          {/* Corner glow */}
+          <div
+            className="absolute -top-6 -right-6 w-16 h-16 rounded-full blur-2xl opacity-20"
+            style={{ background: card.borderColor }}
+          />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <span style={{ color: card.borderColor }} className="opacity-60">
+                {card.icon}
+              </span>
+              <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">
+                {card.label}
+              </span>
             </div>
-          )}
+            <div
+              className={`text-base sm:text-lg font-bold ${card.textColor} ${card.glowColor ?? ""} leading-tight tracking-tight`}
+            >
+              {card.value}
+            </div>
+            {card.sub && (
+              <div className="text-[10px] mt-0.5 text-white/30 font-medium uppercase tracking-wider">
+                {card.sub}
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>

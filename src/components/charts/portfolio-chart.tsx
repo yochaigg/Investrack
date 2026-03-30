@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceDot,
+  Label,
 } from "recharts";
 import { format } from "date-fns";
 import type { PortfolioPoint } from "@/lib/types";
@@ -19,7 +20,19 @@ function formatCurrency(n: number): string {
   return `$${n.toFixed(0)}`;
 }
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: PortfolioPoint }> }) {
+function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}k`;
+  return `$${n.toFixed(0)}`;
+}
+
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: PortfolioPoint }>;
+}) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   const isPositive = d.pl >= 0;
@@ -34,7 +47,9 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
       </div>
       <div className="text-xs mt-1">
         <span className="text-white/40">Invested: </span>
-        <span className="text-white/70">${d.totalInvested.toLocaleString()}</span>
+        <span className="text-white/70">
+          ${d.totalInvested.toLocaleString()}
+        </span>
       </div>
       <div className="text-xs">
         <span className="text-white/40">P/L: </span>
@@ -63,79 +78,283 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   );
 }
 
-function MarkerDot(props: { cx?: number; cy?: number }) {
-  const { cx = 0, cy = 0 } = props;
+/* Labeled marker — shows value + optional title above the dot */
+function LabeledMarker(props: {
+  cx?: number;
+  cy?: number;
+  payload?: PortfolioPoint;
+}) {
+  const { cx = 0, cy = 0, payload } = props;
+  if (!payload) return null;
+  const label =
+    payload.markerTitle || formatCompact(payload.totalValue);
+
   return (
     <g>
-      <circle cx={cx} cy={cy} r={8} fill="rgba(0,240,255,0.15)" />
-      <circle cx={cx} cy={cy} r={4} fill="#00f0ff" stroke="#06060f" strokeWidth={2} />
+      {/* Outer glow */}
+      <circle cx={cx} cy={cy} r={12} fill="rgba(0,240,255,0.08)" />
+      <circle cx={cx} cy={cy} r={7} fill="rgba(0,240,255,0.18)" />
+      {/* Dot */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4}
+        fill="#00f0ff"
+        stroke="#06060f"
+        strokeWidth={2}
+      />
+      {/* Label */}
+      <text
+        x={cx}
+        y={cy - 16}
+        textAnchor="middle"
+        fill="#00f0ff"
+        fontSize={11}
+        fontWeight={700}
+        fontFamily="Inter, system-ui, sans-serif"
+      >
+        {label}
+      </text>
     </g>
   );
 }
 
-export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
-  const markers = data.filter((d) => d.isMarker);
+/* End-value callout annotation box */
+function EndValueAnnotation(props: {
+  cx?: number;
+  cy?: number;
+  payload?: PortfolioPoint;
+  totalROI?: number;
+}) {
+  const { cx = 0, cy = 0, payload, totalROI = 0 } = props;
+  if (!payload) return null;
+
+  const isPositive = payload.pl >= 0;
+  const boxW = 160;
+  const boxH = 42;
+  const boxX = cx - boxW - 12;
+  const boxY = cy - boxH / 2;
 
   return (
-    <div className="glass rounded-2xl p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-white/80">
-          Total Portfolio
-        </h2>
-        {data.length > 0 && (
-          <span className="text-xs text-white/30 font-mono">
-            {format(new Date(data[0].date), "MMM yyyy")} —{" "}
-            {format(new Date(data[data.length - 1].date), "MMM yyyy")}
-          </span>
-        )}
+    <g>
+      {/* Connector line */}
+      <line
+        x1={cx - 6}
+        y1={cy}
+        x2={boxX + boxW}
+        y2={cy}
+        stroke="rgba(0,240,255,0.3)"
+        strokeWidth={1}
+        strokeDasharray="3 2"
+      />
+      {/* Box background */}
+      <rect
+        x={boxX}
+        y={boxY}
+        width={boxW}
+        height={boxH}
+        rx={8}
+        fill="rgba(6,6,15,0.85)"
+        stroke="rgba(0,240,255,0.25)"
+        strokeWidth={1}
+      />
+      {/* Value */}
+      <text
+        x={boxX + 10}
+        y={boxY + 17}
+        fill="#ffffff"
+        fontSize={12}
+        fontWeight={700}
+        fontFamily="Inter, system-ui, sans-serif"
+      >
+        End Value: ${payload.totalValue.toLocaleString()}
+      </text>
+      {/* ROI line */}
+      <text
+        x={boxX + 10}
+        y={boxY + 33}
+        fill={isPositive ? "#00ff88" : "#ff3366"}
+        fontSize={10}
+        fontWeight={600}
+        fontFamily="Inter, system-ui, sans-serif"
+      >
+        {isPositive ? "+" : ""}
+        {totalROI.toFixed(0)}% return
+      </text>
+      {/* Glowing dot */}
+      <circle cx={cx} cy={cy} r={10} fill="rgba(0,240,255,0.12)" />
+      <circle cx={cx} cy={cy} r={6} fill="rgba(0,240,255,0.25)" />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={3.5}
+        fill="#00f0ff"
+        stroke="#06060f"
+        strokeWidth={2}
+      />
+    </g>
+  );
+}
+
+interface PortfolioChartProps {
+  data: PortfolioPoint[];
+  totalROI?: number;
+}
+
+export function PortfolioChart({ data, totalROI = 0 }: PortfolioChartProps) {
+  const markers = data.filter((d) => d.isMarker);
+  const lastPoint = data[data.length - 1];
+  const firstPoint = data[0];
+
+  return (
+    <div className="relative glass rounded-2xl p-4 sm:p-6 overflow-hidden">
+      {/* Subtle glow behind chart */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60%] h-[40%] bg-neon-cyan/[0.03] rounded-full blur-3xl" />
       </div>
-      <div className="h-[300px] sm:h-[360px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00f0ff" stopOpacity={0.3} />
-                <stop offset="50%" stopColor="#00f0ff" stopOpacity={0.08} />
-                <stop offset="100%" stopColor="#00f0ff" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(v) => format(new Date(v), "MMM yy")}
-              tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
-              axisLine={false}
-              tickLine={false}
-              minTickGap={40}
-            />
-            <YAxis
-              tickFormatter={formatCurrency}
-              tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
-              axisLine={false}
-              tickLine={false}
-              width={55}
-              domain={["dataMin * 0.95", "dataMax * 1.05"]}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="totalValue"
-              stroke="#00f0ff"
-              strokeWidth={2}
-              fill="url(#portfolioGrad)"
-              dot={false}
-              activeDot={{ r: 5, fill: "#00f0ff", stroke: "#06060f", strokeWidth: 2 }}
-            />
-            {markers.map((m, i) => (
-              <ReferenceDot
-                key={i}
-                x={m.date}
-                y={m.totalValue}
-                shape={<MarkerDot />}
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-white/80 tracking-tight">
+            Total Portfolio Performance
+          </h2>
+          {data.length > 0 && (
+            <span className="text-xs text-white/30 font-mono">
+              {format(new Date(data[0].date), "MMM yyyy")} —{" "}
+              {format(new Date(data[data.length - 1].date), "MMM yyyy")}
+            </span>
+          )}
+        </div>
+
+        {/* Initial investment legend */}
+        {firstPoint && (
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5">
+              <span className="w-4 h-[2px] bg-neon-cyan/50 inline-block" />
+              <span className="text-[10px] text-white/40 font-mono">
+                ${firstPoint.totalInvested.toLocaleString()} | Initial
+                Investment
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="h-[320px] sm:h-[380px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient
+                  id="portfolioGrad"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#00f0ff" stopOpacity={0.35} />
+                  <stop offset="30%" stopColor="#00f0ff" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#00f0ff" stopOpacity={0.02} />
+                </linearGradient>
+                {/* Glow filter for the line */}
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="rgba(255,255,255,0.04)"
               />
-            ))}
-          </AreaChart>
-        </ResponsiveContainer>
+              <XAxis
+                dataKey="date"
+                tickFormatter={(v) => format(new Date(v), "MMM yy")}
+                tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
+                axisLine={false}
+                tickLine={false}
+                minTickGap={40}
+              />
+              <YAxis
+                tickFormatter={formatCurrency}
+                tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
+                axisLine={false}
+                tickLine={false}
+                width={55}
+                domain={["dataMin * 0.9", "dataMax * 1.1"]}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              {/* Ghost glow line behind main line */}
+              <Area
+                type="monotone"
+                dataKey="totalValue"
+                stroke="#00f0ff"
+                strokeWidth={6}
+                strokeOpacity={0.15}
+                fill="none"
+                dot={false}
+                activeDot={false}
+              />
+              {/* Main line */}
+              <Area
+                type="monotone"
+                dataKey="totalValue"
+                stroke="#00f0ff"
+                strokeWidth={2.5}
+                fill="url(#portfolioGrad)"
+                dot={false}
+                activeDot={{
+                  r: 6,
+                  fill: "#00f0ff",
+                  stroke: "#06060f",
+                  strokeWidth: 2,
+                }}
+                filter="url(#glow)"
+              />
+              {/* Labeled markers */}
+              {markers.map((m, i) => (
+                <ReferenceDot
+                  key={`marker-${i}`}
+                  x={m.date}
+                  y={m.totalValue}
+                  shape={<LabeledMarker payload={m} />}
+                />
+              ))}
+              {/* End value annotation */}
+              {lastPoint && (
+                <ReferenceDot
+                  x={lastPoint.date}
+                  y={lastPoint.totalValue}
+                  shape={
+                    <EndValueAnnotation
+                      payload={lastPoint}
+                      totalROI={totalROI}
+                    />
+                  }
+                />
+              )}
+              {/* Start point marker */}
+              {firstPoint && (
+                <ReferenceDot
+                  x={firstPoint.date}
+                  y={firstPoint.totalValue}
+                  shape={
+                    <LabeledMarker
+                      payload={{
+                        ...firstPoint,
+                        markerTitle: `Day 1`,
+                      }}
+                    />
+                  }
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

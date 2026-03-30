@@ -15,7 +15,15 @@ export default async function DashboardLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-neon-cyan/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-neon-purple/[0.03] rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[300px] bg-neon-blue/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-neon-green/[0.015] rounded-full blur-[100px]" />
+      </div>
+
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -50,7 +58,7 @@ export default async function DashboardLayout({
       </header>
 
       {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">{children}</main>
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">{children}</main>
     </div>
   );
 }
