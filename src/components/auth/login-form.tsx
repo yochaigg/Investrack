@@ -8,14 +8,35 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const router = useRouter();
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
+
+    if (mode === "signup") {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess("Account created! Check your email to confirm, then sign in.");
+      setMode("login");
+      setLoading(false);
+      return;
+    }
 
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -63,16 +84,26 @@ export function LoginForm() {
           id="password"
           type="password"
           required
+          minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/30 transition-all text-sm"
         />
+        {mode === "signup" && (
+          <p className="text-[10px] text-white/25 mt-1">Minimum 6 characters</p>
+        )}
       </div>
 
       {error && (
         <div className="text-loss text-sm px-3 py-2 rounded-lg bg-loss/10 border border-loss/20">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="text-gain text-sm px-3 py-2 rounded-lg bg-gain/10 border border-gain/20">
+          {success}
         </div>
       )}
 
@@ -99,12 +130,30 @@ export function LoginForm() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            Authenticating...
+            {mode === "signup" ? "Creating account..." : "Signing in..."}
           </span>
+        ) : mode === "signup" ? (
+          "Create Account"
         ) : (
           "Sign In"
         )}
       </button>
+
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "login" ? "signup" : "login");
+            setError("");
+            setSuccess("");
+          }}
+          className="text-xs text-white/30 hover:text-white/50 transition-colors"
+        >
+          {mode === "login"
+            ? "Don't have an account? Sign up"
+            : "Already have an account? Sign in"}
+        </button>
+      </div>
     </form>
   );
 }
