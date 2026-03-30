@@ -24,6 +24,9 @@ export function LoginForm() {
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
       if (signUpError) {
@@ -32,9 +35,22 @@ export function LoginForm() {
         return;
       }
 
-      setSuccess("Account created! Check your email to confirm, then sign in.");
-      setMode("login");
-      setLoading(false);
+      // Auto sign-in after signup (works when email confirmation is disabled)
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // If auto sign-in fails, email confirmation might be enabled
+        setSuccess("Account created! Check your email to confirm, then sign in.");
+        setMode("login");
+        setLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
       return;
     }
 
