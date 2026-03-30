@@ -2,14 +2,13 @@
 
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ReferenceDot,
-  Label,
 } from "recharts";
 import { format } from "date-fns";
 import type { PortfolioPoint } from "@/lib/types";
@@ -78,23 +77,19 @@ function CustomTooltip({
   );
 }
 
-/* Labeled marker — shows value + optional title above the dot */
-function LabeledMarker(props: {
+/* Dot rendered at every data point on the line */
+function DateDot(props: {
   cx?: number;
   cy?: number;
+  index?: number;
   payload?: PortfolioPoint;
 }) {
   const { cx = 0, cy = 0, payload } = props;
   if (!payload) return null;
-  const label =
-    payload.markerTitle || formatCompact(payload.totalValue);
 
   return (
     <g>
-      {/* Outer glow */}
-      <circle cx={cx} cy={cy} r={12} fill="rgba(0,240,255,0.08)" />
-      <circle cx={cx} cy={cy} r={7} fill="rgba(0,240,255,0.18)" />
-      {/* Dot */}
+      <circle cx={cx} cy={cy} r={8} fill="rgba(0,240,255,0.1)" />
       <circle
         cx={cx}
         cy={cy}
@@ -103,17 +98,17 @@ function LabeledMarker(props: {
         stroke="#06060f"
         strokeWidth={2}
       />
-      {/* Label */}
+      {/* Value label above dot */}
       <text
         x={cx}
-        y={cy - 16}
+        y={cy - 14}
         textAnchor="middle"
         fill="#00f0ff"
-        fontSize={11}
+        fontSize={10}
         fontWeight={700}
         fontFamily="Inter, system-ui, sans-serif"
       >
-        {label}
+        {formatCompact(payload.totalValue)}
       </text>
     </g>
   );
@@ -132,7 +127,7 @@ function EndValueAnnotation(props: {
   const isPositive = payload.pl >= 0;
   const boxW = 160;
   const boxH = 42;
-  const boxX = cx - boxW - 12;
+  const boxX = cx - boxW - 16;
   const boxY = cy - boxH / 2;
 
   return (
@@ -181,17 +176,6 @@ function EndValueAnnotation(props: {
         {isPositive ? "+" : ""}
         {totalROI.toFixed(0)}% return
       </text>
-      {/* Glowing dot */}
-      <circle cx={cx} cy={cy} r={10} fill="rgba(0,240,255,0.12)" />
-      <circle cx={cx} cy={cy} r={6} fill="rgba(0,240,255,0.25)" />
-      <circle
-        cx={cx}
-        cy={cy}
-        r={3.5}
-        fill="#00f0ff"
-        stroke="#06060f"
-        strokeWidth={2}
-      />
     </g>
   );
 }
@@ -202,7 +186,6 @@ interface PortfolioChartProps {
 }
 
 export function PortfolioChart({ data, totalROI = 0 }: PortfolioChartProps) {
-  const markers = data.filter((d) => d.isMarker);
   const lastPoint = data[data.length - 1];
   const firstPoint = data[0];
 
@@ -241,23 +224,11 @@ export function PortfolioChart({ data, totalROI = 0 }: PortfolioChartProps) {
 
         <div className="h-[320px] sm:h-[380px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <LineChart
               data={data}
-              margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
+              margin={{ top: 30, right: 20, left: 0, bottom: 0 }}
             >
               <defs>
-                <linearGradient
-                  id="portfolioGrad"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor="#00f0ff" stopOpacity={0.35} />
-                  <stop offset="30%" stopColor="#00f0ff" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#00f0ff" stopOpacity={0.02} />
-                </linearGradient>
-                {/* Glow filter for the line */}
                 <filter id="glow">
                   <feGaussianBlur stdDeviation="3" result="blur" />
                   <feMerge>
@@ -273,7 +244,7 @@ export function PortfolioChart({ data, totalROI = 0 }: PortfolioChartProps) {
               />
               <XAxis
                 dataKey="date"
-                tickFormatter={(v) => format(new Date(v), "MMM yy")}
+                tickFormatter={(v) => format(new Date(v), "MMM dd")}
                 tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
                 axisLine={false}
                 tickLine={false}
@@ -285,47 +256,36 @@ export function PortfolioChart({ data, totalROI = 0 }: PortfolioChartProps) {
                 axisLine={false}
                 tickLine={false}
                 width={55}
-                domain={["dataMin * 0.9", "dataMax * 1.1"]}
+                domain={["dataMin * 0.85", "dataMax * 1.15"]}
               />
               <Tooltip content={<CustomTooltip />} />
-              {/* Ghost glow line behind main line */}
-              <Area
+              {/* Ghost glow line */}
+              <Line
                 type="monotone"
                 dataKey="totalValue"
                 stroke="#00f0ff"
                 strokeWidth={6}
                 strokeOpacity={0.15}
-                fill="none"
                 dot={false}
                 activeDot={false}
               />
-              {/* Main line */}
-              <Area
+              {/* Main line with dots on every date point */}
+              <Line
                 type="monotone"
                 dataKey="totalValue"
                 stroke="#00f0ff"
                 strokeWidth={2.5}
-                fill="url(#portfolioGrad)"
-                dot={false}
+                dot={<DateDot />}
                 activeDot={{
-                  r: 6,
+                  r: 7,
                   fill: "#00f0ff",
                   stroke: "#06060f",
                   strokeWidth: 2,
                 }}
                 filter="url(#glow)"
               />
-              {/* Labeled markers */}
-              {markers.map((m, i) => (
-                <ReferenceDot
-                  key={`marker-${i}`}
-                  x={m.date}
-                  y={m.totalValue}
-                  shape={<LabeledMarker payload={m} />}
-                />
-              ))}
               {/* End value annotation */}
-              {lastPoint && (
+              {lastPoint && data.length > 1 && (
                 <ReferenceDot
                   x={lastPoint.date}
                   y={lastPoint.totalValue}
@@ -337,22 +297,7 @@ export function PortfolioChart({ data, totalROI = 0 }: PortfolioChartProps) {
                   }
                 />
               )}
-              {/* Start point marker */}
-              {firstPoint && (
-                <ReferenceDot
-                  x={firstPoint.date}
-                  y={firstPoint.totalValue}
-                  shape={
-                    <LabeledMarker
-                      payload={{
-                        ...firstPoint,
-                        markerTitle: `Day 1`,
-                      }}
-                    />
-                  }
-                />
-              )}
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
