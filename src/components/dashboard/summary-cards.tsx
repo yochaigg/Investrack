@@ -107,29 +107,23 @@ export function SummaryCards({ data }: { data: DashboardData }) {
       {cards.map((card, i) => (
         <div
           key={card.label}
-          className="relative rounded-xl p-3.5 sm:p-4 animate-slide-up overflow-hidden"
+          className="glass relative rounded-xl p-3.5 sm:p-4 animate-slide-up group hover:scale-[1.02] transition-transform duration-300"
           style={{
-            animationDelay: `${i * 60}ms`,
-            background: "linear-gradient(155deg, rgba(18,18,48,0.8) 0%, rgba(6,6,18,0.95) 100%)",
-            border: `1px solid ${card.borderColor}30`,
-            boxShadow: `0 2px 4px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.35), 0 16px 40px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -1px 1px rgba(0,0,0,0.3)`,
+            animationDelay: `${i * 80}ms`,
+            borderColor: `${card.borderColor}25`,
           }}
         >
-          {/* Glass reflection shine */}
+          {/* Colored top edge glow */}
           <div
-            className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none"
+            className="absolute top-0 left-[5%] right-[5%] h-[2px] pointer-events-none z-10"
             style={{
-              background: `linear-gradient(90deg, transparent, ${card.borderColor}50, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${card.borderColor}, transparent)`,
+              boxShadow: `0 0 12px ${card.borderColor}40, 0 0 24px ${card.borderColor}20`,
             }}
           />
-          {/* Inner top light gradient */}
+          {/* Large corner glow */}
           <div
-            className="absolute top-0 left-0 right-0 h-[40%] pointer-events-none rounded-t-xl"
-            style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)" }}
-          />
-          {/* Corner glow */}
-          <div
-            className="absolute -top-8 -right-8 w-20 h-20 rounded-full blur-2xl opacity-25 pointer-events-none"
+            className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-3xl opacity-30 pointer-events-none group-hover:opacity-50 transition-opacity"
             style={{ background: card.borderColor }}
           />
 
