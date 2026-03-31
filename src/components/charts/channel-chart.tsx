@@ -160,26 +160,19 @@ export function ChannelChart({ data, color, name }: ChannelChartProps) {
             width={48}
             domain={["dataMin * 0.85", "dataMax * 1.15"]}
           />
-          <Tooltip content={<CustomTooltip color={color} />} />
-          {/* Ghost glow line */}
-          <Line
-            type="monotone"
-            dataKey="portfolioValue"
-            stroke={color}
-            strokeWidth={5}
-            strokeOpacity={0.12}
-            dot={false}
-            activeDot={false}
+          <Tooltip
+            content={<CustomTooltip color={color} />}
+            cursor={{ stroke: `${color}30`, strokeWidth: 1, strokeDasharray: "4 3" }}
           />
-          {/* Main line with dots on every date */}
+          {/* Main line with glowing dots on every date */}
           <Line
             type="monotone"
             dataKey="portfolioValue"
             stroke={color}
-            strokeWidth={2}
+            strokeWidth={2.5}
             dot={<DateDot color={color} />}
             activeDot={{
-              r: 5,
+              r: 7,
               fill: color,
               stroke: "#06060f",
               strokeWidth: 2,

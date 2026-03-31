@@ -112,7 +112,7 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
   const firstPoint = data[0];
 
   return (
-    <div className="relative glass rounded-2xl p-4 sm:p-6 overflow-hidden">
+    <div className="relative card-3d rounded-2xl p-4 sm:p-6 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60%] h-[40%] bg-neon-cyan/[0.03] rounded-full blur-3xl" />
       </div>
@@ -149,6 +149,12 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
               data={chartData}
               margin={{ top: 20, right: 12, left: 0, bottom: 4 }}
             >
+              <defs>
+                <linearGradient id="gridFade" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.06)" />
+                  <stop offset="100%" stopColor="rgba(255,255,255,0.01)" />
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
@@ -168,25 +174,40 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                 tickLine={false}
                 width={55}
               />
-              <Tooltip content={<ChartTooltip />} />
+              <Tooltip
+                content={<ChartTooltip />}
+                cursor={{ stroke: "rgba(0,240,255,0.2)", strokeWidth: 1, strokeDasharray: "4 3" }}
+              />
               <Legend
                 iconType="circle"
                 iconSize={8}
-                wrapperStyle={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}
+                wrapperStyle={{ fontSize: 11, color: "rgba(255,255,255,0.5)", paddingTop: 12 }}
               />
 
-              {/* Total line — solid, thicker */}
+              {/* Total line — solid, bright, glowing */}
               <Line
                 name="Total"
                 type="monotone"
                 dataKey="Total"
                 stroke={TOTAL_COLOR}
-                strokeWidth={2.5}
-                dot={{ r: 5, fill: TOTAL_COLOR, stroke: "#06060f", strokeWidth: 2 }}
-                activeDot={{ r: 7, fill: TOTAL_COLOR, stroke: "#06060f", strokeWidth: 2 }}
+                strokeWidth={3}
+                dot={{
+                  r: 5,
+                  fill: TOTAL_COLOR,
+                  stroke: "#04040c",
+                  strokeWidth: 2,
+                  filter: "drop-shadow(0 0 6px rgba(0,240,255,0.6))",
+                }}
+                activeDot={{
+                  r: 8,
+                  fill: TOTAL_COLOR,
+                  stroke: "#04040c",
+                  strokeWidth: 2,
+                  filter: "drop-shadow(0 0 12px rgba(0,240,255,0.8))",
+                }}
               />
 
-              {/* One line per channel — dashed */}
+              {/* One line per channel — dashed, distinct colors */}
               {channels.map((ch) => (
                 <Line
                   key={ch.name}
@@ -194,10 +215,22 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                   type="monotone"
                   dataKey={ch.name}
                   stroke={ch.color}
-                  strokeWidth={1.8}
+                  strokeWidth={2}
                   strokeDasharray="6 3"
-                  dot={{ r: 4, fill: ch.color, stroke: "#06060f", strokeWidth: 2 }}
-                  activeDot={{ r: 6, fill: ch.color, stroke: "#06060f", strokeWidth: 2 }}
+                  dot={{
+                    r: 4,
+                    fill: ch.color,
+                    stroke: "#04040c",
+                    strokeWidth: 2,
+                    filter: `drop-shadow(0 0 4px ${ch.color}80)`,
+                  }}
+                  activeDot={{
+                    r: 7,
+                    fill: ch.color,
+                    stroke: "#04040c",
+                    strokeWidth: 2,
+                    filter: `drop-shadow(0 0 10px ${ch.color})`,
+                  }}
                   connectNulls
                 />
               ))}

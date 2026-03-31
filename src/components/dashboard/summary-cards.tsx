@@ -110,8 +110,9 @@ export function SummaryCards({ data }: { data: DashboardData }) {
           className="relative rounded-xl p-3.5 sm:p-4 animate-slide-up overflow-hidden"
           style={{
             animationDelay: `${i * 60}ms`,
-            background: "rgba(255,255,255,0.03)",
+            background: "linear-gradient(145deg, rgba(14,14,36,0.85), rgba(6,6,16,0.95))",
             border: `1px solid ${card.borderColor}33`,
+            boxShadow: `0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)`,
           }}
         >
           {/* Top accent border */}

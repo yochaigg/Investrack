@@ -20,8 +20,9 @@ export function ChannelCard({ channel }: { channel: ChannelSummary }) {
     <div
       className="relative rounded-2xl overflow-hidden animate-slide-up"
       style={{
-        background: "rgba(255,255,255,0.03)",
+        background: "linear-gradient(145deg, rgba(14,14,36,0.9), rgba(6,6,16,0.95))",
         border: `1px solid ${channel.color}20`,
+        boxShadow: `0 4px 20px rgba(0,0,0,0.4), 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
       }}
     >
       {/* Top accent border */}
