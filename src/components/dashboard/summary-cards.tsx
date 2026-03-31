@@ -110,21 +110,26 @@ export function SummaryCards({ data }: { data: DashboardData }) {
           className="relative rounded-xl p-3.5 sm:p-4 animate-slide-up overflow-hidden"
           style={{
             animationDelay: `${i * 60}ms`,
-            background: "linear-gradient(145deg, rgba(14,14,36,0.85), rgba(6,6,16,0.95))",
-            border: `1px solid ${card.borderColor}33`,
-            boxShadow: `0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)`,
+            background: "linear-gradient(155deg, rgba(18,18,48,0.8) 0%, rgba(6,6,18,0.95) 100%)",
+            border: `1px solid ${card.borderColor}30`,
+            boxShadow: `0 2px 4px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.35), 0 16px 40px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -1px 1px rgba(0,0,0,0.3)`,
           }}
         >
-          {/* Top accent border */}
+          {/* Glass reflection shine */}
           <div
-            className="absolute top-0 left-0 right-0 h-[2px]"
+            className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none"
             style={{
-              background: `linear-gradient(90deg, transparent, ${card.borderColor}, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${card.borderColor}50, transparent)`,
             }}
+          />
+          {/* Inner top light gradient */}
+          <div
+            className="absolute top-0 left-0 right-0 h-[40%] pointer-events-none rounded-t-xl"
+            style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)" }}
           />
           {/* Corner glow */}
           <div
-            className="absolute -top-6 -right-6 w-16 h-16 rounded-full blur-2xl opacity-20"
+            className="absolute -top-8 -right-8 w-20 h-20 rounded-full blur-2xl opacity-25 pointer-events-none"
             style={{ background: card.borderColor }}
           />
 

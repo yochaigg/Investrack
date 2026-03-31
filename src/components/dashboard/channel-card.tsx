@@ -20,22 +20,28 @@ export function ChannelCard({ channel }: { channel: ChannelSummary }) {
     <div
       className="relative rounded-2xl overflow-hidden animate-slide-up"
       style={{
-        background: "linear-gradient(145deg, rgba(14,14,36,0.9), rgba(6,6,16,0.95))",
-        border: `1px solid ${channel.color}20`,
-        boxShadow: `0 4px 20px rgba(0,0,0,0.4), 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
+        background: "linear-gradient(155deg, rgba(16,16,44,0.85) 0%, rgba(6,6,18,0.95) 100%)",
+        border: `1px solid ${channel.color}22`,
+        boxShadow: `0 2px 4px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.35), 0 20px 50px rgba(0,0,0,0.25), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.3)`,
       }}
     >
-      {/* Top accent border */}
+      {/* Glass reflection shine on top edge */}
       <div
-        className="absolute top-0 left-0 right-0 h-[2px]"
+        className="absolute top-0 left-[8%] right-[8%] h-[1px] pointer-events-none z-20"
         style={{
-          background: `linear-gradient(90deg, transparent, ${channel.color}, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${channel.color}60, rgba(255,255,255,0.3), ${channel.color}60, transparent)`,
         }}
+      />
+
+      {/* Inner top light — glass refraction */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[35%] pointer-events-none rounded-t-2xl z-10"
+        style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)" }}
       />
 
       {/* Corner glow */}
       <div
-        className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-3xl opacity-10 pointer-events-none"
+        className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-3xl opacity-15 pointer-events-none"
         style={{ background: channel.color }}
       />
 

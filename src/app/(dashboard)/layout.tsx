@@ -16,12 +16,14 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-bg relative overflow-hidden">
-      {/* Ambient background glows */}
+      {/* Ambient background glows — stronger for depth */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-neon-cyan/[0.02] rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-neon-purple/[0.03] rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[300px] bg-neon-blue/[0.02] rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-neon-green/[0.015] rounded-full blur-[100px]" />
+        <div className="absolute -top-40 left-1/4 w-[700px] h-[700px] bg-neon-cyan/[0.04] rounded-full blur-[150px]" />
+        <div className="absolute top-1/3 -right-20 w-[500px] h-[500px] bg-neon-purple/[0.05] rounded-full blur-[130px]" />
+        <div className="absolute -bottom-20 -left-20 w-[600px] h-[400px] bg-neon-blue/[0.035] rounded-full blur-[140px]" />
+        <div className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] bg-neon-green/[0.025] rounded-full blur-[120px]" />
+        {/* Subtle vignette */}
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%)" }} />
       </div>
 
       {/* Header */}
