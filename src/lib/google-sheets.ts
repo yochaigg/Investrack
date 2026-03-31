@@ -4,10 +4,26 @@ import { google } from "googleapis";
 import type { SheetRow } from "./types";
 
 function getAuth() {
+  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const sheetId = process.env.GOOGLE_SHEET_ID;
+
+  if (!clientEmail || !privateKey || !sheetId) {
+    throw new Error(
+      `Missing Google Sheets env vars: ${[
+        !clientEmail && "GOOGLE_SERVICE_ACCOUNT_EMAIL",
+        !privateKey && "GOOGLE_PRIVATE_KEY",
+        !sheetId && "GOOGLE_SHEET_ID",
+      ]
+        .filter(Boolean)
+        .join(", ")}`
+    );
+  }
+
   return new google.auth.GoogleAuth({
     credentials: {
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
-      private_key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+      client_email: clientEmail,
+      private_key: privateKey.replace(/\\n/g, "\n"),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
