@@ -19,17 +19,18 @@ const CHANNEL_COLORS = [
 ];
 
 function parseDate(raw: string): Date {
-  // Try ISO first
-  const iso = new Date(raw);
-  if (isValid(iso) && !isNaN(iso.getTime())) return iso;
-
-  // Try common formats
-  for (const fmt of ["dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy"]) {
+  // For slash-separated dates (e.g. "01/04/2026"), always try DD/MM/YYYY first
+  // before falling back to new Date() which assumes MM/DD/YYYY in en-US
+  for (const fmt of ["dd/MM/yyyy", "yyyy-MM-dd", "dd-MM-yyyy", "MM/dd/yyyy"]) {
     const d = parse(raw, fmt, new Date());
     if (isValid(d)) return d;
   }
 
-  return new Date(raw);
+  // ISO strings like "2026-04-01" or full timestamps
+  const iso = new Date(raw);
+  if (isValid(iso) && !isNaN(iso.getTime())) return iso;
+
+  return new Date(NaN);
 }
 
 function toDataPoint(row: SheetRow): DataPoint {
