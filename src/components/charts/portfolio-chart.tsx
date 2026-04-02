@@ -25,7 +25,6 @@ function formatDateLabel(v: string): string {
   return isValid(d) ? format(d, "MMM dd") : v;
 }
 
-/* Build flat data: { date, Total, Stock, Crypto, ... } */
 function buildChartData(
   portfolioSeries: PortfolioPoint[],
   channels: ChannelSummary[]
@@ -59,7 +58,6 @@ function buildChartData(
   });
 }
 
-/* Tooltip */
 function ChartTooltip({
   active,
   payload,
@@ -71,28 +69,34 @@ function ChartTooltip({
 }) {
   if (!active || !payload?.length || !label) return null;
 
+  // Filter out the hidden fill area
+  const visible = payload.filter((e) => e.name !== "Total-fill");
+
   return (
     <div className="chart-tooltip">
-      <div className="text-[11px] text-white/50 mb-2">
+      <div className="text-[10px] font-mono text-white/40 mb-2.5 pb-2 border-b border-white/[0.07] tracking-wider uppercase">
         {formatDateLabel(label)}
       </div>
-      {payload.map((entry) => (
+      {visible.map((entry) => (
         <div
           key={entry.name}
-          className="flex items-center justify-between gap-4 text-xs"
+          className="flex items-center justify-between gap-5 text-xs py-0.5"
         >
           <div className="flex items-center gap-1.5">
             <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: entry.color }}
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{
+                backgroundColor: entry.color,
+                boxShadow: `0 0 6px ${entry.color}80`,
+              }}
             />
-            <span className="text-white/60">{entry.name}</span>
+            <span className="text-white/50 font-mono text-[11px]">{entry.name}</span>
           </div>
           <span
-            className="font-mono font-bold"
-            style={{ color: entry.color }}
+            className="font-mono font-bold text-[12px]"
+            style={{ color: entry.color, textShadow: `0 0 8px ${entry.color}50` }}
           >
-            ${entry.value.toLocaleString()}
+            {formatCurrency(entry.value)}
           </span>
         </div>
       ))}
@@ -111,87 +115,125 @@ interface Props {
 export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
   const chartData = buildChartData(data, channels);
   const firstPoint = data[0];
+  const lastPoint = data[data.length - 1];
+  const isPositive = totalROI >= 0;
 
   return (
     <div className="relative glass rounded-2xl p-4 sm:p-6">
+      {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60%] h-[40%] bg-neon-cyan/[0.03] rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-neon-cyan/[0.025] rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-white/80 tracking-tight">
-            Total Portfolio Performance
-          </h2>
+        {/* Header row */}
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[9px] font-mono text-neon-cyan/50 tracking-[0.2em] uppercase">Total Portfolio</span>
+            </div>
+            <div className="flex items-baseline gap-3">
+              {lastPoint && (
+                <span className="text-2xl sm:text-3xl font-bold font-mono text-neon-cyan text-glow-cyan tracking-tight">
+                  {formatCurrency(lastPoint.totalValue)}
+                </span>
+              )}
+              <span
+                className={`text-sm font-mono font-bold px-2 py-0.5 rounded ${
+                  isPositive
+                    ? "text-gain bg-gain/10 text-glow-green"
+                    : "text-loss bg-loss/10 text-glow-loss"
+                }`}
+              >
+                {isPositive ? "+" : ""}
+                {totalROI.toFixed(2)}%
+              </span>
+            </div>
+            {firstPoint && (
+              <div className="flex items-center gap-3 mt-1.5 text-[11px] font-mono text-white/30">
+                <span>invested {formatCurrency(firstPoint.totalInvested)}</span>
+                {lastPoint && (
+                  <span className={isPositive ? "text-gain/60" : "text-loss/60"}>
+                    {isPositive ? "+" : ""}
+                    {formatCurrency(lastPoint.totalValue - firstPoint.totalInvested)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           {data.length > 1 && (
-            <span className="text-xs text-white/30 font-mono">
-              {formatDateLabel(data[0].date)} —{" "}
-              {formatDateLabel(data[data.length - 1].date)}
-            </span>
+            <div className="text-[10px] text-white/25 font-mono tracking-wide sm:text-right">
+              <div>{formatDateLabel(data[0].date)}</div>
+              <div className="text-white/15">→</div>
+              <div>{formatDateLabel(data[data.length - 1].date)}</div>
+            </div>
           )}
         </div>
 
-        {firstPoint && (
-          <div className="flex items-center gap-4 mb-3 text-[10px] font-mono text-white/40">
-            <span>Initial: ${firstPoint.totalInvested.toLocaleString()}</span>
-            <span>
-              Current: ${data[data.length - 1]?.totalValue.toLocaleString()}
-            </span>
-            <span className={totalROI >= 0 ? "text-gain" : "text-loss"}>
-              {totalROI >= 0 ? "+" : ""}
-              {totalROI.toFixed(1)}% ROI
-            </span>
-          </div>
-        )}
-
-        <div className="h-[340px] sm:h-[420px]">
+        {/* Chart */}
+        <div className="h-[340px] sm:h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={chartData}
-              margin={{ top: 20, right: 12, left: 0, bottom: 4 }}
+              margin={{ top: 16, right: 12, left: 0, bottom: 4 }}
             >
               <defs>
                 <linearGradient id="totalFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#00f0ff" stopOpacity={0.2} />
-                  <stop offset="40%" stopColor="#00f0ff" stopOpacity={0.08} />
+                  <stop offset="0%" stopColor="#00f0ff" stopOpacity={0.18} />
+                  <stop offset="45%" stopColor="#00f0ff" stopOpacity={0.06} />
                   <stop offset="100%" stopColor="#00f0ff" stopOpacity={0} />
                 </linearGradient>
-                <filter id="glowLine">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
+                <filter id="glowLine" x="-20%" y="-100%" width="140%" height="300%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="glowSoft" x="-20%" y="-100%" width="140%" height="300%">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
               </defs>
+
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="rgba(255,255,255,0.04)"
+                stroke="rgba(255,255,255,0.035)"
               />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatDateLabel}
-                tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
+                tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)", fontFamily: "JetBrains Mono, monospace" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={formatCurrency}
-                tick={{ fontSize: 11, fill: "rgba(255,255,255,0.3)" }}
+                tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)", fontFamily: "JetBrains Mono, monospace" }}
                 axisLine={false}
                 tickLine={false}
-                width={55}
-                domain={["dataMin * 0.85", "dataMax * 1.1"]}
+                width={58}
+                domain={["dataMin * 0.88", "dataMax * 1.08"]}
               />
               <Tooltip
                 content={<ChartTooltip />}
-                cursor={{ stroke: "rgba(0,240,255,0.2)", strokeWidth: 1, strokeDasharray: "4 3" }}
+                cursor={{ stroke: "rgba(0,240,255,0.25)", strokeWidth: 1, strokeDasharray: "4 3" }}
               />
               <Legend
                 iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: 11, color: "rgba(255,255,255,0.5)", paddingTop: 12 }}
+                iconSize={7}
+                wrapperStyle={{
+                  fontSize: 11,
+                  color: "rgba(255,255,255,0.45)",
+                  paddingTop: 16,
+                  fontFamily: "JetBrains Mono, monospace",
+                }}
+                formatter={(value) => value === "Total-fill" ? null : value}
               />
 
               {/* Total gradient fill */}
@@ -204,7 +246,7 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                 legendType="none"
               />
 
-              {/* Total line — solid, bright, glowing */}
+              {/* Total line — bright glowing */}
               <Line
                 name="Total"
                 type="monotone"
@@ -218,7 +260,7 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                   strokeWidth: 2,
                 }}
                 activeDot={{
-                  r: 8,
+                  r: 9,
                   fill: TOTAL_COLOR,
                   stroke: "#03030a",
                   strokeWidth: 2,
@@ -226,7 +268,7 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                 filter="url(#glowLine)"
               />
 
-              {/* One line per channel — dashed, distinct colors */}
+              {/* Channel lines — dashed */}
               {channels.map((ch) => (
                 <Line
                   key={ch.name}
@@ -235,21 +277,21 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                   dataKey={ch.name}
                   stroke={ch.color}
                   strokeWidth={2}
-                  strokeDasharray="6 3"
+                  strokeDasharray="5 3"
                   dot={{
                     r: 4,
                     fill: ch.color,
                     stroke: "#04040c",
                     strokeWidth: 2,
-                    filter: `drop-shadow(0 0 4px ${ch.color}80)`,
                   }}
                   activeDot={{
                     r: 7,
                     fill: ch.color,
                     stroke: "#04040c",
                     strokeWidth: 2,
-                    filter: `drop-shadow(0 0 10px ${ch.color})`,
+                    filter: `drop-shadow(0 0 8px ${ch.color})`,
                   }}
+                  filter="url(#glowSoft)"
                   connectNulls
                 />
               ))}

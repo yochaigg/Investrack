@@ -36,9 +36,10 @@ interface CardDef {
   value: string;
   sub?: string;
   icon: React.ReactNode;
-  borderColor: string;
+  accentColor: string;
   textColor: string;
-  glowColor?: string;
+  glowClass?: string;
+  tag?: string;
 }
 
 export function SummaryCards({ data }: { data: DashboardData }) {
@@ -46,103 +47,115 @@ export function SummaryCards({ data }: { data: DashboardData }) {
 
   const cards: CardDef[] = [
     {
-      label: "Initial Investment",
-      value: formatCurrency(data.totalInvested),
-      sub: "USD",
-      icon: <DollarSign className="w-4 h-4" />,
-      borderColor: "#3b82f6",
-      textColor: "text-blue-400",
-    },
-    {
-      label: "Total Gain",
-      value: `${isPositive ? "+" : ""}${formatCurrency(data.totalPL)}`,
-      sub: "USD",
-      icon: isPositive ? (
-        <TrendingUp className="w-4 h-4" />
-      ) : (
-        <TrendingDown className="w-4 h-4" />
-      ),
-      borderColor: isPositive ? "#00ff88" : "#ff3366",
-      textColor: isPositive ? "text-gain" : "text-loss",
-      glowColor: isPositive ? "text-glow-green" : "text-glow-loss",
-    },
-    {
-      label: "Return",
-      value: formatPercent(data.totalROI),
-      icon: isPositive ? (
-        <TrendingUp className="w-4 h-4" />
-      ) : (
-        <TrendingDown className="w-4 h-4" />
-      ),
-      borderColor: isPositive ? "#f59e0b" : "#ff3366",
-      textColor: isPositive ? "text-amber-400" : "text-loss",
-      glowColor: isPositive ? undefined : "text-glow-loss",
-    },
-    {
-      label: "Duration",
-      value: `${formatDate(data.firstDate)} — ${formatDate(data.lastDate)}`,
-      icon: <Calendar className="w-4 h-4" />,
-      borderColor: "#8b5cf6",
-      textColor: "text-violet-400",
-    },
-    {
       label: "Portfolio Value",
       value: formatCurrency(data.currentValue),
-      icon: <BarChart3 className="w-4 h-4" />,
-      borderColor: "#00f0ff",
+      sub: "USD",
+      icon: <BarChart3 className="w-3.5 h-3.5" />,
+      accentColor: "#00f0ff",
       textColor: "text-neon-cyan",
-      glowColor: "text-glow-cyan",
+      glowClass: "text-glow-cyan",
+      tag: "TOTAL",
+    },
+    {
+      label: "Total Invested",
+      value: formatCurrency(data.totalInvested),
+      sub: "USD",
+      icon: <DollarSign className="w-3.5 h-3.5" />,
+      accentColor: "#3b82f6",
+      textColor: "text-blue-400",
+      tag: "CAPITAL",
+    },
+    {
+      label: "Total P/L",
+      value: `${isPositive ? "+" : ""}${formatCurrency(data.totalPL)}`,
+      sub: "USD",
+      icon: isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />,
+      accentColor: isPositive ? "#00ff88" : "#ff3366",
+      textColor: isPositive ? "text-gain" : "text-loss",
+      glowClass: isPositive ? "text-glow-green" : "text-glow-loss",
+      tag: "PROFIT/LOSS",
+    },
+    {
+      label: "Total Return",
+      value: formatPercent(data.totalROI),
+      icon: isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />,
+      accentColor: isPositive ? "#f59e0b" : "#ff3366",
+      textColor: isPositive ? "text-amber-400" : "text-loss",
+      glowClass: isPositive ? "text-glow-amber" : "text-glow-loss",
+      tag: "ROI",
     },
     {
       label: "Active Channels",
       value: data.activeChannels.toString(),
-      icon: <Layers className="w-4 h-4" />,
-      borderColor: "#ec4899",
+      icon: <Layers className="w-3.5 h-3.5" />,
+      accentColor: "#ec4899",
       textColor: "text-pink-400",
+      tag: "ASSETS",
+    },
+    {
+      label: "Period",
+      value: `${formatDate(data.firstDate)}`,
+      sub: `→ ${formatDate(data.lastDate)}`,
+      icon: <Calendar className="w-3.5 h-3.5" />,
+      accentColor: "#8b5cf6",
+      textColor: "text-violet-400",
+      tag: "RANGE",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
       {cards.map((card, i) => (
         <div
           key={card.label}
-          className="glass relative rounded-xl p-3.5 sm:p-4 animate-slide-up group hover:scale-[1.02] transition-transform duration-300"
+          className="terminal-card relative rounded-xl p-3.5 animate-slide-up group hover:scale-[1.025] transition-all duration-300 cursor-default"
           style={{
-            animationDelay: `${i * 80}ms`,
-            borderColor: `${card.borderColor}25`,
+            animationDelay: `${i * 70}ms`,
+            borderColor: `${card.accentColor}20`,
           }}
         >
           {/* Colored top edge glow */}
           <div
-            className="absolute top-0 left-[5%] right-[5%] h-[2px] pointer-events-none z-10"
+            className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none z-10 rounded-t-xl"
             style={{
-              background: `linear-gradient(90deg, transparent, ${card.borderColor}, transparent)`,
-              boxShadow: `0 0 12px ${card.borderColor}40, 0 0 24px ${card.borderColor}20`,
+              background: `linear-gradient(90deg, transparent, ${card.accentColor}90, transparent)`,
+              boxShadow: `0 0 16px ${card.accentColor}50, 0 0 32px ${card.accentColor}20`,
             }}
           />
-          {/* Large corner glow */}
+          {/* Corner ambient glow */}
           <div
-            className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-3xl opacity-30 pointer-events-none group-hover:opacity-50 transition-opacity"
-            style={{ background: card.borderColor }}
+            className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-3xl opacity-25 pointer-events-none group-hover:opacity-45 transition-opacity duration-500"
+            style={{ background: card.accentColor }}
           />
 
           <div className="relative z-10">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <span style={{ color: card.borderColor }} className="opacity-60">
+            {/* Tag label */}
+            <div
+              className="text-[8px] font-mono font-bold tracking-[0.2em] mb-2 opacity-50"
+              style={{ color: card.accentColor }}
+            >
+              {card.tag ?? card.label.toUpperCase()}
+            </div>
+
+            {/* Icon + label row */}
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span style={{ color: card.accentColor }} className="opacity-70">
                 {card.icon}
               </span>
-              <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">
+              <span className="text-[10px] font-medium text-white/35 tracking-tight truncate">
                 {card.label}
               </span>
             </div>
+
+            {/* Main value */}
             <div
-              className={`text-base sm:text-lg font-bold ${card.textColor} ${card.glowColor ?? ""} leading-tight tracking-tight`}
+              className={`text-base sm:text-lg font-bold font-mono leading-none tracking-tight ${card.textColor} ${card.glowClass ?? ""}`}
             >
               {card.value}
             </div>
+
             {card.sub && (
-              <div className="text-[10px] mt-0.5 text-white/30 font-medium uppercase tracking-wider">
+              <div className="text-[10px] mt-1 text-white/30 font-mono tracking-tight">
                 {card.sub}
               </div>
             )}

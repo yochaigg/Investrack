@@ -37,17 +37,48 @@ body {
   position: absolute;
   inset: -50%;
   background-image:
-    linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  animation: gridScroll 30s linear infinite;
-  transform: perspective(500px) rotateX(60deg);
-  transform-origin: center 40%;
+    linear-gradient(rgba(0,240,255,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: gridScroll 25s linear infinite;
+  transform: perspective(600px) rotateX(55deg);
+  transform-origin: center 45%;
+}
+
+/* Secondary finer grid layer */
+.dashboard-bg::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background-image:
+    linear-gradient(rgba(0,240,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,0.015) 1px, transparent 1px);
+  background-size: 14px 14px;
+  animation: gridScroll 25s linear infinite;
+  transform: perspective(600px) rotateX(55deg);
+  transform-origin: center 45%;
 }
 
 @keyframes gridScroll {
   0% { background-position: 0 0; }
-  100% { background-position: 60px 60px; }
+  100% { background-position: 56px 56px; }
+}
+
+/* ═══════════════════════════════════
+   SCANLINE OVERLAY (CRT effect)
+   ═══════════════════════════════════ */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
 }
 
 /* ═══════════════════════════════════
@@ -55,16 +86,16 @@ body {
    ═══════════════════════════════════ */
 .glass {
   position: relative;
-  background: linear-gradient(165deg, rgba(12,16,40,0.75) 0%, rgba(4,6,16,0.9) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(165deg, rgba(12,16,40,0.80) 0%, rgba(4,6,16,0.92) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08);
   box-shadow:
-    0 4px 8px rgba(0,0,0,0.5),
-    0 12px 32px rgba(0,0,0,0.4),
-    0 24px 72px rgba(0,0,0,0.3),
-    inset 0 1px 1px rgba(255,255,255,0.08),
-    inset 0 -1px 2px rgba(0,0,0,0.4);
+    0 4px 8px rgba(0,0,0,0.6),
+    0 12px 32px rgba(0,0,0,0.5),
+    0 32px 80px rgba(0,0,0,0.35),
+    inset 0 1px 1px rgba(255,255,255,0.10),
+    inset 0 -1px 2px rgba(0,0,0,0.5);
   overflow: hidden;
 }
 
@@ -74,24 +105,24 @@ body {
   position: absolute;
   top: 0;
   left: -100%;
-  width: 60%;
+  width: 55%;
   height: 100%;
   background: linear-gradient(
     105deg,
-    transparent 40%,
-    rgba(255,255,255,0.03) 45%,
-    rgba(255,255,255,0.06) 50%,
-    rgba(255,255,255,0.03) 55%,
-    transparent 60%
+    transparent 38%,
+    rgba(255,255,255,0.025) 43%,
+    rgba(255,255,255,0.055) 50%,
+    rgba(255,255,255,0.025) 57%,
+    transparent 62%
   );
   z-index: 3;
   pointer-events: none;
-  animation: shineSweep 6s ease-in-out infinite;
+  animation: shineSweep 7s ease-in-out infinite;
 }
 
 @keyframes shineSweep {
   0%, 100% { left: -100%; }
-  50% { left: 150%; }
+  50% { left: 160%; }
 }
 
 /* Top edge light bar */
@@ -104,110 +135,95 @@ body {
   height: 1px;
   background: linear-gradient(90deg,
     transparent,
-    rgba(0,240,255,0.15) 20%,
-    rgba(255,255,255,0.25) 50%,
-    rgba(0,240,255,0.15) 80%,
+    rgba(0,240,255,0.18) 20%,
+    rgba(255,255,255,0.30) 50%,
+    rgba(0,240,255,0.18) 80%,
     transparent
   );
   z-index: 4;
   pointer-events: none;
 }
 
-.glass-strong {
-  position: relative;
-  background: linear-gradient(165deg, rgba(16,20,52,0.8) 0%, rgba(6,8,22,0.95) 100%);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 8px 24px rgba(0,0,0,0.5),
-    0 24px 64px rgba(0,0,0,0.3),
-    0 0 60px rgba(0, 240, 255, 0.04),
-    inset 0 1px 2px rgba(255,255,255,0.12),
-    inset 0 -2px 4px rgba(0,0,0,0.4);
-}
-
 /* ═══════════════════════════════════
-   3D CARD — chart containers
+   TERMINAL CARD — stat containers
    ═══════════════════════════════════ */
-.card-3d {
+.terminal-card {
   position: relative;
-  background: linear-gradient(155deg, rgba(10,14,38,0.85) 0%, rgba(4,4,14,0.95) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(155deg, rgba(8,12,32,0.90) 0%, rgba(3,4,12,0.96) 100%);
+  border: 1px solid rgba(255,255,255,0.07);
   box-shadow:
-    0 2px 4px rgba(0,0,0,0.5),
-    0 8px 20px rgba(0,0,0,0.4),
-    0 20px 60px rgba(0,0,0,0.3),
-    0 40px 80px rgba(0,0,0,0.15),
-    inset 0 1px 2px rgba(255,255,255,0.08),
-    inset 0 -2px 6px rgba(0,0,0,0.4);
+    0 2px 6px rgba(0,0,0,0.6),
+    0 8px 24px rgba(0,0,0,0.5),
+    0 24px 64px rgba(0,0,0,0.35),
+    inset 0 1px 2px rgba(255,255,255,0.07),
+    inset 0 -2px 6px rgba(0,0,0,0.5);
   overflow: hidden;
 }
 
-/* Shine sweep on 3D cards too */
-.card-3d::before {
+/* Top corner cut — trading terminal accent */
+.terminal-card::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255,255,255,0.02) 45%,
-    rgba(255,255,255,0.05) 50%,
-    rgba(255,255,255,0.02) 55%,
-    transparent 60%
-  );
-  z-index: 3;
-  pointer-events: none;
-  animation: shineSweep 8s ease-in-out infinite;
-  animation-delay: 2s;
-}
-
-.card-3d::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
   right: 0;
-  height: 50%;
-  background: linear-gradient(180deg,
-    rgba(255,255,255,0.025) 0%,
-    transparent 100%
-  );
-  z-index: 1;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 18px 18px 0;
+  border-color: transparent rgba(0,240,255,0.15) transparent transparent;
+  z-index: 5;
   pointer-events: none;
-  border-radius: inherit;
 }
 
 /* ═══════════════════════════════════
    NEON GLOW TEXT
    ═══════════════════════════════════ */
 .text-glow-cyan {
-  text-shadow: 0 0 6px rgba(0,240,255,0.8), 0 0 16px rgba(0,240,255,0.4), 0 0 40px rgba(0,240,255,0.15);
+  text-shadow: 0 0 6px rgba(0,240,255,0.9), 0 0 18px rgba(0,240,255,0.5), 0 0 50px rgba(0,240,255,0.2);
 }
 .text-glow-green {
-  text-shadow: 0 0 6px rgba(0,255,136,0.8), 0 0 16px rgba(0,255,136,0.4), 0 0 40px rgba(0,255,136,0.15);
+  text-shadow: 0 0 6px rgba(0,255,136,0.9), 0 0 18px rgba(0,255,136,0.5), 0 0 50px rgba(0,255,136,0.2);
 }
 .text-glow-loss {
-  text-shadow: 0 0 6px rgba(255,51,102,0.8), 0 0 16px rgba(255,51,102,0.4);
+  text-shadow: 0 0 6px rgba(255,51,102,0.9), 0 0 18px rgba(255,51,102,0.5);
+}
+.text-glow-amber {
+  text-shadow: 0 0 6px rgba(245,158,11,0.9), 0 0 18px rgba(245,158,11,0.5);
 }
 
 /* ═══════════════════════════════════
    CHART TOOLTIP
    ═══════════════════════════════════ */
 .chart-tooltip {
-  background: rgba(4, 6, 16, 0.96) !important;
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 240, 255, 0.25) !important;
-  border-radius: 12px !important;
+  background: rgba(3, 4, 14, 0.98) !important;
+  backdrop-filter: blur(28px);
+  border: 1px solid rgba(0, 240, 255, 0.3) !important;
+  border-radius: 10px !important;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.7),
-    0 0 30px rgba(0, 240, 255, 0.08),
-    inset 0 1px 1px rgba(255,255,255,0.08) !important;
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(0, 240, 255, 0.1),
+    inset 0 1px 1px rgba(255,255,255,0.07) !important;
   padding: 12px 16px !important;
+}
+
+/* ═══════════════════════════════════
+   TICKER STRIP
+   ═══════════════════════════════════ */
+.ticker-strip {
+  background: linear-gradient(90deg, rgba(0,240,255,0.04) 0%, rgba(0,240,255,0.08) 50%, rgba(0,240,255,0.04) 100%);
+  border-top: 1px solid rgba(0,240,255,0.08);
+  border-bottom: 1px solid rgba(0,240,255,0.08);
+}
+
+/* ═══════════════════════════════════
+   LIVE PULSE INDICATOR
+   ═══════════════════════════════════ */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.live-dot {
+  animation: livePulse 2s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════
@@ -215,8 +231,8 @@ body {
    ═══════════════════════════════════ */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,240,255,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,240,255,0.25); }
 
 /* ═══════════════════════════════════
    RECHARTS
@@ -230,16 +246,13 @@ body {
   font-size: 11px;
 }
 .recharts-tooltip-cursor {
-  stroke: rgba(0, 240, 255, 0.3) !important;
+  stroke: rgba(0, 240, 255, 0.35) !important;
   stroke-width: 1px !important;
   stroke-dasharray: 4 3 !important;
 }
 .recharts-legend-item-text {
   color: rgba(255, 255, 255, 0.5) !important;
   font-size: 11px !important;
-}
-.recharts-line-curve {
-  filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.2));
 }
 
 /* ═══════════════════════════════════
@@ -254,6 +267,10 @@ body {
   100% { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(0,240,255,0.2); }
-  50% { box-shadow: 0 0 20px rgba(0,240,255,0.4); }
+  0%, 100% { box-shadow: 0 0 8px rgba(0,240,255,0.25); }
+  50% { box-shadow: 0 0 24px rgba(0,240,255,0.5), 0 0 48px rgba(0,240,255,0.15); }
+}
+@keyframes borderPulse {
+  0%, 100% { border-color: rgba(0,240,255,0.12); }
+  50% { border-color: rgba(0,240,255,0.28); }
 }

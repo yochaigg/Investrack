@@ -19,10 +19,7 @@ function getDateCutoff(range: FilterState["dateRange"]): Date | null {
   }
 }
 
-function filterData(
-  data: DashboardData,
-  filters: FilterState
-): DashboardData {
+function filterData(data: DashboardData, filters: FilterState): DashboardData {
   const cutoff = getDateCutoff(filters.dateRange);
 
   const filterPoints = <T extends { date: string }>(pts: T[]): T[] => {
@@ -32,9 +29,7 @@ function filterData(
 
   let channels = data.channels;
   if (filters.selectedChannels.length > 0) {
-    channels = channels.filter((ch) =>
-      filters.selectedChannels.includes(ch.name)
-    );
+    channels = channels.filter((ch) => filters.selectedChannels.includes(ch.name));
   }
 
   channels = channels.map((ch) => {
@@ -48,7 +43,6 @@ function filterData(
 
   let portfolioSeries = filterPoints(data.portfolioSeries);
 
-  // Recalculate if channel filter is active
   if (filters.selectedChannels.length > 0) {
     const selectedNames = new Set(filters.selectedChannels);
     portfolioSeries = portfolioSeries.map((p) => {
@@ -77,6 +71,16 @@ function filterData(
   };
 }
 
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <div className="w-1 h-4 rounded-full bg-neon-cyan/60" style={{ boxShadow: "0 0 8px rgba(0,240,255,0.6)" }} />
+      <span className="text-[10px] font-mono font-bold text-white/40 tracking-[0.2em] uppercase">{label}</span>
+      <div className="flex-1 h-px bg-gradient-to-r from-neon-cyan/15 to-transparent" />
+    </div>
+  );
+}
+
 export function DashboardClient({ data }: { data: DashboardData }) {
   const [filters, setFilters] = useState<FilterState>({
     dateRange: "all",
@@ -86,9 +90,12 @@ export function DashboardClient({ data }: { data: DashboardData }) {
   const filtered = useMemo(() => filterData(data, filters), [data, filters]);
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Summary */}
-      <SummaryCards data={filtered} />
+    <div className="space-y-6 animate-fade-in">
+      {/* Summary stats */}
+      <section>
+        <SectionHeader label="Portfolio Overview" />
+        <SummaryCards data={filtered} />
+      </section>
 
       {/* Filters */}
       <Filters
@@ -98,19 +105,24 @@ export function DashboardClient({ data }: { data: DashboardData }) {
       />
 
       {/* Portfolio chart */}
-      <PortfolioChart data={filtered.portfolioSeries} channels={filtered.channels} totalROI={filtered.totalROI} />
+      <section>
+        <SectionHeader label="Performance Chart" />
+        <PortfolioChart
+          data={filtered.portfolioSeries}
+          channels={filtered.channels}
+          totalROI={filtered.totalROI}
+        />
+      </section>
 
       {/* Per-channel charts */}
-      <div>
-        <h2 className="text-sm font-semibold text-white/60 mb-3">
-          Investment Channels
-        </h2>
+      <section>
+        <SectionHeader label={`Investment Channels (${filtered.channels.length})`} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.channels.map((ch) => (
             <ChannelCard key={ch.name} channel={ch} />
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
