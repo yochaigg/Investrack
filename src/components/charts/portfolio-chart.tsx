@@ -182,6 +182,7 @@ export function PortfolioChart({ data, channels, totalROI = 0 }: Props) {
                 axisLine={false}
                 tickLine={false}
                 width={55}
+                domain={["dataMin * 0.85", "dataMax * 1.1"]}
               />
               <Tooltip
                 content={<ChartTooltip />}
